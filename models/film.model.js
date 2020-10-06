@@ -96,9 +96,9 @@ Film.delete = (filmName, result) => {
 
 Film.getAll = (result) => {
   sql.query('SELECT FilmName, ReleaseYear, FormatName FROM films\
-   INNER JOIN formats ON formats.FormatID=films.FormatID', (err, data) => {
+   INNER JOIN formats ON formats.FormatID=films.FormatID\
+   ORDER BY FilmName ASC', (err, data) => {
     if (err) {
-      console.log(err);
       result(err, null);
       return;
     }
@@ -107,19 +107,17 @@ Film.getAll = (result) => {
 };
 
 Film.findByActor = (actor, result) => {
-  const elements = actor.split(' ');
-  sql.query('select FilmName, ReleaseYear, FormatName\
+  sql.query('select distinct FilmName, ReleaseYear, FormatName\
   from films inner join connections on connections.FilmID=films.FilmID\
   inner join actors on actors.ActorID=connections.ActorID\
   inner join formats on formats.FormatID=films.FormatID\
-  where ActorName=? AND ActorLastname=?', elements, (err, data) => {
+  where ActorName=? AND ActorLastname=?', actor, (err, data) => {
     if (err) {
       console.log('error: ', err);
       result(err, null);
       return;
     }
     if (data.length) {
-      console.log('found film: ', data);
       result(null, data);
       return;
     }
@@ -133,13 +131,11 @@ Film.findByName = (filmName, result) => {
   FROM films INNER JOIN formats ON films.FormatID=formats.FormatID\
   WHERE FilmName=?', filmName, (err, data) => {
     if (err) {
-      console.log('error: ', err);
       result(err, null);
       return;
     }
 
     if (data.length) {
-      console.log('found film: ', data);
       result(null, data);
       return;
     }

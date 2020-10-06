@@ -5,21 +5,25 @@ module.exports = {
     if (!req.body) {
       res.status(400).send({message: 'Film can\'t be empty!'});
     }
-    const film = new Film({
-      name: req.body.name,
-      year: req.body.year,
-      format: req.body.format,
-      actors: req.body.actors.split(', '),
+    if (req.body.name && req.body.year && req.body.format && req.body.actors) {
+      const film = new Film({
+        name: req.body.name,
+        year: req.body.year,
+        format: req.body.format,
+        actors: req.body.actors.split(', '),
       // actors is a string so we split it into array
-    });
-    Film.add(film, (err, data) => {
-      if (err) {
-        res.status(500).send({
-          message: err.message||
+      });
+      Film.add(film, (err, data) => {
+        if (err) {
+          res.status(500).send({
+            message: err.message||
           'Unknown error occurred while adding a new film',
-        });
-      } else res.send(data);
-    });
+          });
+        } else res.send(data);
+      });
+    } else {
+      res.status(422).send('Invalid Input');
+    }
   },
   deleteFilm: (req, res) => {
     req.params.filmName = req.params.filmName.replace(/_/g, ' ');
@@ -56,37 +60,49 @@ module.exports = {
         if (err) {
           if (err.kind === 'not_found') {
             res.status(404).send({
-              message: `Not found film with name ${req.params.filmName}.`,
+              message: `Did not find film with name ${req.params.filmName}.`,
             });
+            res.end();
           } else {
             res.status(500).send({
               message: 'Error retrieving film with name ' +
               req.params.filmName,
             });
+            res.end();
           }
-        } else res.send(data);
+        } else {
+          res.send(data);
+          res.end();
+        }
       });
     }
   },
   findByActor: (req, res) => {
     if (req.params.actorName) {
       const actor = req.params.actorName.replace(/_/g, ' ');
-      Film.findByActor(actor, (err, data) => {
-        if (err) {
-          if (err.kind === 'not_found') {
-            res.status(404).send({
-              message: `Not found film with actor ${actor}.`,
-            });
-          } else {
-            res.status(500).send({
-              message: 'Error retrieving film with actor ' +
+      const elements = actor.split(' ');
+      if (elements.length === 2) {
+        Film.findByActor(elements, (err, data) => {
+          if (err) {
+            if (err.kind === 'not_found') {
+              res.status(404).send({
+                message: `Did not find film with actor ${actor}.`,
+              });
+            } else {
+              res.status(500).send({
+                message: 'Error retrieving film with actor ' +
               req.params.actor,
-            });
-          }
-        } else {
-          res.send(data);
-        };
-      });
+              });
+            }
+          } else {
+            res.send(data);
+          };
+        });
+      } else {
+        res.status(422).send({
+          message: 'Invalid input: ' + req.params.actorName,
+        });
+      }
     }
   },
   uploadFile: (req, res) => {
