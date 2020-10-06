@@ -16,10 +16,20 @@ const commands = {
         console.log('Press enter to proceed');
       });
     });
-    return;
   },
   getFilm(filmname) {
     http.get(`http://localhost:3000/films/${filmname}`, (resp) => {
+      let data = '';
+      resp.on('data', (chunk) => {
+        data += chunk;
+      }).on('end', () => {
+        console.table(JSON.parse(data));
+        console.log('Press enter to proceed');
+      });
+    });
+  },
+  getFilmByActor(actorname) {
+    http.get(`http://localhost:3000/actors/${actorname}`, (resp) => {
       let data = '';
       resp.on('data', (chunk) => {
         data += chunk;
@@ -100,7 +110,7 @@ const commands = {
     const req = http.request(options, (res) => {
       res.on('data', (data) => {
         const jsoned = JSON.parse(data);
-        console.log(jsoned);
+        console.table(jsoned);
         console.log('Press enter to proceed');
       });
     });

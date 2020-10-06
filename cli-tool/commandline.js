@@ -20,17 +20,19 @@ rl.on('line', (input) => {
   let year;
   let format;
   let actors;
-  if (line.match('-n')) {
-    [line, name] = line.split('-n');
-    if (name.match('-y')) {
-      [name, year] = name.split('-y');
-      [year, format] = year.split('-f');
-      [format, actors] = format.split('-a');
+  let actor;
+  if (line.match(' -n ')) {
+    [line, name] = line.split(' -n ');
+    if (name.match(' -y ')) {
+      [name, year] = name.split(' -y ');
+      [year, format] = year.split(' -f ');
+      [format, actors] = format.split(' -a ');
     }
   }
-  if (line.match('-u')) {
-    [line, upload] = line.split('-u');
+  if (line.match(' -u ')) {
+    [line, upload] = line.split(' -u ');
   }
+  if (line.match(' -actor ')) [line, actor] = line.split(' -actor ');
   // console.log(line, name, year, format, actors);
   const arg1 = line.trim();
   if (arg1 === '') {
@@ -38,12 +40,13 @@ rl.on('line', (input) => {
   } else {
     const command = handlers[arg1];
     if (command) {
-      if (!name && !upload) command();
+      if (!name && !upload && !actor) command();
       else {
         if (!year&&!format&&!actors) {
           if (name) {
             command(name.trim());
-          } else command(upload.trim());
+          } else if (upload) command(upload.trim());
+          else command(actor);
         } else {
           command(name.trim(), year.trim(), format.trim(), actors.trim());
         }
