@@ -1,5 +1,5 @@
 # Film Library
-
+Minimum Viable Product
 ## Glossary
  * [Prerequisites](#usage-prerequisites)
  * [Database setup](#set-up-database)
@@ -50,3 +50,16 @@ Apllication is written with MVC architecture in mind. Server covers model and co
 #### Client
 
 `film-cli` is a command line interface tool for abstracting user from direct http requests to server and providing with basic response transformation into viewable format.
+This CLI has following commands:
+  - help - lists all available commands
+  - addFilm - adds one film to library
+    - example command: `addFilm -n Call Me By Your Name -y 2017 -f Blu-Ray -a Army Hammer, Timothee Chalamet, Amira Casar`
+  - getFilms - gets all films in library
+  - getFilm - gets film with name
+    - example command: `getFilm -n Call Me By Your Name`
+  - getFilmByActor - gets film with actor named
+    - example command: `getFilmByActor -actor Army Hammer`
+  - uploadFile - upload a .csv file to add a list of films at once
+    - example command: `uploadFile -u sample_movies.csv`
+  - deleteFilm - delete film by name
+    - example command: `deleteFilm -n Call Me By Your Name`
