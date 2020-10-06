@@ -7,7 +7,7 @@
  * [Command Line Interface](###CLI-Setup)
  * [Tests](###Tests-Setup)
  * [Application architecture](###Application-Architecture)
-    - [Database](####Database)
+    - [Database](####Database-1)
     - [Server](####Server)
     - [Client](####Client)
 
