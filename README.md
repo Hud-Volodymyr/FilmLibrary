@@ -1,15 +1,15 @@
 # Film Library
 
 ## Glossary
- * [Prerequisites](###Usage-Prerequisites)
- * [Database setup](###Set-Up-Database)
- * [Server setup](###Set-Up-Server)
- * [Command Line Interface](###CLI-Setup)
- * [Tests](###Tests-Setup)
- * [Application architecture](###Application-Architecture)
-    - [Database](####Database-1)
-    - [Server](####Server)
-    - [Client](####Client)
+ * [Prerequisites](###usage-prerequisites)
+ * [Database setup](###set-up-database)
+ * [Server setup](###set-up-server)
+ * [Command Line Interface](###cli-setup)
+ * [Tests](###tests-setup)
+ * [Application architecture](###application-architecture)
+    - [Database](####database-1)
+    - [Server](####server)
+    - [Client](####client)
 
 ### Usage Prerequisites:
 * Cloned this reposiitory
