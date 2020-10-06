@@ -7,9 +7,9 @@
  * [Command Line Interface](#cli-setup)
  * [Tests](#tests-setup)
  * [Application architecture](#application-architecture)
-    - [Database](##database-1)
-    - [Server](##server)
-    - [Client](##client)
+    - [Database](#database-1)
+    - [Server](#server)
+    - [Client](#client)
 
 ### Usage Prerequisites:
 * Cloned this reposiitory
