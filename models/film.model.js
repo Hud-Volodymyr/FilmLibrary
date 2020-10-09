@@ -10,14 +10,20 @@ const Film = function(film) {
 };
 
 Film.add = (newFilm, result) => {
-  sql.query('INSERT IGNORE INTO films (FilmName, ReleaseYear, FormatID) \
+  sql.query('INSERT INTO films (FilmName, ReleaseYear, FormatID) \
 VALUES (?, ?, (SELECT FormatID FROM formats WHERE FormatName=?))',
   [newFilm.name, +newFilm.year, newFilm.format],
   (err, data) => {
     if (err) {
-      console.log('error:', err);
-      result(err, null);
-      return err;
+      if (err.code == 'ER_DUP_ENTRY' || err.errno == 1062) {
+        console.log('The entry already exists');
+        result(409, null);
+        return;
+      } else {
+        console.log('error:', err);
+        result(err, null);
+        return err;
+      }
     }
     Film.addActors(newFilm, (err, data) => {
       if (err) console.log(err);
@@ -95,9 +101,14 @@ Film.delete = (filmName, result) => {
 };
 
 Film.getAll = (result) => {
-  sql.query('SELECT FilmName, ReleaseYear, FormatName FROM films\
-   INNER JOIN formats ON formats.FormatID=films.FormatID\
-   ORDER BY FilmName ASC', (err, data) => {
+  sql.query('SELECT FilmName, ReleaseYear, FormatName,\
+  GROUP_CONCAT(CONCAT_WS(\' \', ActorName, ActorLastname) SEPARATOR \', \')\
+  AS \'Actors\' FROM films INNER JOIN formats ON\
+  films.FormatID=formats.FormatID\
+  INNER JOIN connections ON films.FilmID=connections.FilmID\
+  INNER JOIN actors ON connections.ActorID=actors.ActorID\
+  GROUP BY FilmName, ReleaseYear, FormatName ORDER BY FilmName ASC',
+  (err, data) => {
     if (err) {
       result(err, null);
       return;
@@ -107,29 +118,90 @@ Film.getAll = (result) => {
 };
 
 Film.findByActor = (actor, result) => {
-  sql.query('select distinct FilmName, ReleaseYear, FormatName\
-  from films inner join connections on connections.FilmID=films.FilmID\
-  inner join actors on actors.ActorID=connections.ActorID\
-  inner join formats on formats.FormatID=films.FormatID\
-  where ActorName=? AND ActorLastname=?', actor, (err, data) => {
-    if (err) {
-      console.log('error: ', err);
-      result(err, null);
-      return;
-    }
-    if (data.length) {
-      result(null, data);
-      return;
-    }
+  if (actor.length === 2) {
+    sql.query('select FilmName, ReleaseYear, FormatName,\
+    GROUP_CONCAT(CONCAT_WS(\' \', ActorName, ActorLastname) SEPARATOR \', \')\
+    AS \'Actors\' from films inner join connections on\
+    connections.FilmID=films.FilmID inner join actors on\
+    actors.ActorID=connections.ActorID\
+    inner join formats on formats.FormatID=films.FormatID\
+    where films.FilmID IN (select films.FilmID from films inner join\
+    connections on connections.FilmID=films.FilmID inner join actors\
+    on actors.ActorID=connections.ActorID inner join formats\
+    on formats.FormatID=films.FormatID where ActorName=? and ActorLastname=?)\
+    GROUP BY FilmName, ReleaseYear, FormatName'
+    , actor, (err, data) => {
+      if (err) {
+        console.log('error: ', err);
+        result(err, null);
+        return;
+      }
+      if (data.length) {
+        result(null, data);
+        return;
+      }
 
-    // not found film with the name
-    result({kind: 'not_found'}, null);
-  });
+      // not found film with the name
+      result({kind: 'not_found'}, null);
+    });
+  } else if (actor.length === 1) {
+    sql.query('select FilmName, ReleaseYear, FormatName,\
+    GROUP_CONCAT(CONCAT_WS(\' \', ActorName, ActorLastname) SEPARATOR \', \')\
+    AS \'Actors\' from films inner join connections on\
+    connections.FilmID=films.FilmID inner join actors on\
+    actors.ActorID=connections.ActorID\
+    inner join formats on formats.FormatID=films.FormatID\
+    where films.FilmID IN (select films.FilmID from films inner join\
+    connections on connections.FilmID=films.FilmID inner join actors\
+    on actors.ActorID=connections.ActorID inner join formats\
+    on formats.FormatID=films.FormatID where ActorName=?)\
+    GROUP BY FilmName, ReleaseYear, FormatName', actor, (err, data) => {
+      if (err) {
+        console.log('error: ', err);
+        result(err, null);
+        return;
+      }
+      if (data.length) {
+        result(null, data);
+        return;
+      }
+
+      // if didn't find film with the name, try to find it with lastname
+      sql.query('select FilmName, ReleaseYear, FormatName,\
+      GROUP_CONCAT(CONCAT_WS(\' \', ActorName, ActorLastname) SEPARATOR \', \')\
+      AS \'Actors\' from films inner join connections on\
+      connections.FilmID=films.FilmID inner join actors on\
+      actors.ActorID=connections.ActorID\
+      inner join formats on formats.FormatID=films.FormatID\
+      where films.FilmID IN (select films.FilmID from films inner join\
+      connections on connections.FilmID=films.FilmID inner join actors\
+      on actors.ActorID=connections.ActorID inner join formats\
+      on formats.FormatID=films.FormatID where ActorLastname=?)\
+      GROUP BY FilmName, ReleaseYear, FormatName', actor, (err, data) => {
+        if (err) {
+          console.log('error: ', err);
+          result(err, null);
+          return;
+        }
+        if (data.length) {
+          result(null, data);
+          return;
+        }
+        // still didn't find it - return not found error
+        result({kind: 'not_found'}, null);
+      });
+    });
+  }
 };
 Film.findByName = (filmName, result) => {
-  sql.query('SELECT FilmName, ReleaseYear, FormatName\
-  FROM films INNER JOIN formats ON films.FormatID=formats.FormatID\
-  WHERE FilmName=?', filmName, (err, data) => {
+  sql.query('SELECT FilmName, ReleaseYear, FormatName,\
+  GROUP_CONCAT(CONCAT_WS(\' \', ActorName, ActorLastname) SEPARATOR \', \')\
+  AS \'Actors\' FROM films INNER JOIN formats ON\
+  films.FormatID=formats.FormatID\
+  INNER JOIN connections ON films.FilmID=connections.FilmID\
+  INNER JOIN actors ON connections.ActorID=actors.ActorID\
+  WHERE FilmName LIKE ? GROUP BY FilmName, ReleaseYear, FormatName',
+  '%' + filmName + '%', (err, data) => {
     if (err) {
       result(err, null);
       return;

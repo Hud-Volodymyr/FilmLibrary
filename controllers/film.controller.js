@@ -15,10 +15,16 @@ module.exports = {
       });
       Film.add(film, (err, data) => {
         if (err) {
-          res.status(500).send({
-            message: err.message||
+          if (err == 409) {
+            res.status(409).send({
+              message: 'This film already exists',
+            });
+          } else {
+            res.status(500).send({
+              message: err.message||
           'Unknown error occurred while adding a new film',
-          });
+            });
+          }
         } else res.send(data);
       });
     } else {
@@ -55,18 +61,20 @@ module.exports = {
     });
   },
   findByName: (req, res) => {
-    if (req.params.filmName) {
-      Film.findByName(req.params.filmName.replace(/_/g, ' '), (err, data) => {
+    const filmName = req.query.filmName;
+    if (filmName) {
+      Film.findByName(filmName, (err, data) => {
         if (err) {
+          console.log(err);
           if (err.kind === 'not_found') {
             res.status(404).send({
-              message: `Did not find film with name ${req.params.filmName}.`,
+              message: `Did not find film with name ${filmName}.`,
             });
             res.end();
           } else {
             res.status(500).send({
               message: 'Error retrieving film with name ' +
-              req.params.filmName,
+              filmName,
             });
             res.end();
           }
@@ -78,20 +86,20 @@ module.exports = {
     }
   },
   findByActor: (req, res) => {
-    if (req.params.actorName) {
-      const actor = req.params.actorName.replace(/_/g, ' ');
-      const elements = actor.split(' ');
-      if (elements.length === 2) {
+    const actorName = req.query.actorName;
+    if (actorName) {
+      const elements = actorName.split(' ');
+      if (elements.length > 0 && elements.length < 3) {
         Film.findByActor(elements, (err, data) => {
           if (err) {
             if (err.kind === 'not_found') {
               res.status(404).send({
-                message: `Did not find film with actor ${actor}.`,
+                message: `Did not find film with actor ${actorName}.`,
               });
             } else {
               res.status(500).send({
                 message: 'Error retrieving film with actor ' +
-              req.params.actor,
+              actorName,
               });
             }
           } else {
@@ -100,7 +108,7 @@ module.exports = {
         });
       } else {
         res.status(422).send({
-          message: 'Invalid input: ' + req.params.actorName,
+          message: 'Invalid input: ' + actorName,
         });
       }
     }
