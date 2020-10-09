@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS actors (
     ActorLastname VARCHAR(30) NOT NULL,
     PRIMARY KEY (ActorID),
     CONSTRAINT UC_actors UNIQUE (ActorName, ActorLastname)
-)engine = innodb;
+) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS formats (
     FormatID INT NOT NULL AUTO_INCREMENT,
     FormatName VARCHAR(30) NOT NULL,
@@ -21,16 +21,17 @@ CREATE TABLE IF NOT EXISTS films (
     FormatID INT,
     PRIMARY KEY (FilmID),
     FOREIGN KEY (FormatID) REFERENCES formats (FormatID),
-    UNIQUE (FilmName)
-)engine = innodb;
+    UNIQUE (FilmName, ReleaseYear)
+) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS connections (
     ID INT NOT NULL AUTO_INCREMENT,
     FilmID INT,
     ActorID INT,
     PRIMARY KEY(ID),
     FOREIGN KEY (FilmID) REFERENCES films(FilmID) ON DELETE CASCADE,
-    FOREIGN KEY (ActorID) REFERENCES actors(ActorID) ON DELETE CASCADE
-)engine = innodb;
+    FOREIGN KEY (ActorID) REFERENCES actors(ActorID) ON DELETE CASCADE,
+    UNIQUE (FilmID, ActorID)
+) ENGINE=InnoDB;
 COMMIT;
 
 BEGIN;
