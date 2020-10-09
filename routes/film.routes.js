@@ -5,8 +5,8 @@ module.exports = (app) => {
   // Retrieve all Films sorted by name
   app.get('/films', films.showFilms);
   // Retrieve a single Film with by field
-  app.get('/films/:filmName', films.findByName);
-  app.get('/actors/:actorName', films.findByActor);
+  app.get('/films/filmName', films.findByName);
+  app.get('/actors/actorName', films.findByActor);
   // Upload a file of films
   app.post('/films/upload', films.uploadFile);
   // Delete a film with film name
