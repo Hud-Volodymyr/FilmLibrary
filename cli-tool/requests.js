@@ -19,11 +19,17 @@ const commands = {
   getFilms() {
     http.get('http://localhost:3000/films', (resp) => {
       let data = '';
+      const contentType = resp.headers['content-type'];
       resp.on('data', (chunk) => {
         data += chunk;
       }).on('end', () => {
-        console.table(JSON.parse(data));
-        console.log('Press enter to proceed');
+        if (contentType.match('application/json')) {
+          console.table(JSON.parse(data));
+          console.log('Press enter to proceed');
+        } else {
+          console.log('Something went wrong!');
+          console.log(data);
+        }
       });
     });
   },
@@ -32,11 +38,17 @@ const commands = {
     searchUrl.searchParams.set('filmName', filmname);
     http.get(searchUrl, (resp) => {
       let data = '';
+      const contentType = resp.headers['content-type'];
       resp.on('data', (chunk) => {
         data += chunk;
       }).on('end', () => {
-        console.table(JSON.parse(data));
-        console.log('Press enter to proceed');
+        if (contentType.match('application/json')) {
+          console.table(JSON.parse(data));
+          console.log('Press enter to proceed');
+        } else {
+          console.log('Something went wrong!');
+          console.log(data);
+        }
       });
     });
   },
@@ -45,11 +57,18 @@ const commands = {
     searchUrl.searchParams.set('actorName', actorname);
     http.get(searchUrl, (resp) => {
       let data = '';
+      const contentType = resp.headers['content-type'];
       resp.on('data', (chunk) => {
         data += chunk;
       }).on('end', () => {
-        console.table(JSON.parse(data));
-        console.log('Press enter to proceed');
+        if (contentType.match('application/json')) {
+          console.table(JSON.parse(data));
+          console.log('Press enter to proceed');
+        } else {
+          console.log('Response should be in JSON');
+          console.log(`Instead got ${contentType}`);
+          console.log(data);
+        }
       });
     });
   },
