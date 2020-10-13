@@ -26,7 +26,10 @@ VALUES (?, ?, (SELECT FormatID FROM formats WHERE FormatName=?))',
       }
     }
     Film.addActors(newFilm, (err, data) => {
-      if (err) console.log(err);
+      if (err) {
+        console.log(err);
+        result(err, null);
+      }
       return;
     });
     console.log('Added film:', {id1: data.insertId, ...newFilm});
@@ -38,8 +41,13 @@ VALUES (?, ?, (SELECT FormatID FROM formats WHERE FormatName=?))',
 
 Film.addActors = (newFilm, result) => { // actors is an array, example:
 // ["Army Hammer", "Timothee Chalamet", "Amira Casar"]
+
   newFilm.actors.forEach((actor, index) => {
     const elements = actor.split(' ');
+    if (elements.length != 2) {
+      result({message:
+        'Invalid actor name/s!'}, null);
+    }
     sql.query('INSERT IGNORE INTO actors(ActorName, ActorLastname)\
     VALUES (?, ?)',
     [elements[0], elements[1]], (err, data) => {
@@ -58,7 +66,7 @@ Film.addActors = (newFilm, result) => { // actors is an array, example:
         actors: actor,
       };
     });
-    sql.query('INSERT INTO connections(FilmID, ActorID)\
+    sql.query('INSERT IGNORE INTO connections(FilmID, ActorID)\
       VALUES ((SELECT FilmID FROM films WHERE FilmName=?),\
         (SELECT ActorID FROM actors WHERE ActorLastname=?))',
     [newFilm.name, elements[1]], (err, data) => {
@@ -224,9 +232,10 @@ Film.multiple = (dataset, result) => {
       name: data[0],
       year: data[1],
       format: data[2],
-      actors: data.slice(3),
-      // for actors we slice data here and get an array of actors
+      actors: data[3].split(/, /g),
+      // for actors we split data here and get an array of actors
     });
+
     sql.query('INSERT IGNORE INTO films (FilmName, ReleaseYear, FormatID) \
 VALUES (?, ?, (SELECT FormatID FROM formats WHERE FormatName=?))',
     [film.name, +film.year, film.format],
@@ -235,15 +244,15 @@ VALUES (?, ?, (SELECT FormatID FROM formats WHERE FormatName=?))',
       if (err) {
         console.log('error:', err);
         result(err, null);
-        return err;
+        return false;
       }
       Film.addActors(film, (err, data) => {
         if (err) console.log(err);
-        return;
       });
       console.log('Added film:', {id1: data.insertId, ...film});
       if (counter === arr.length) {
         result(null, dataset);
+        return true;
       }
     });
   });
