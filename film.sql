@@ -1,5 +1,5 @@
 DROP DATABASE IF EXISTS film_db;
-CREATE DATABASE film_db;
+CREATE DATABASE film_db CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE film_db;
 BEGIN;
 CREATE TABLE IF NOT EXISTS actors (
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS formats (
 )engine = innodb;
 CREATE TABLE IF NOT EXISTS films (
     FilmID INT NOT NULL AUTO_INCREMENT,
-    FilmName VARCHAR(30) NOT NULL,
+    FilmName VARCHAR(70) NOT NULL,
     ReleaseYear SMALLINT NOT NULL,
     FormatID INT,
     PRIMARY KEY (FilmID),
